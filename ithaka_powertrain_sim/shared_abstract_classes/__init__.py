@@ -1,0 +1,2 @@
+from .abstract_electrical_component import AbstractElectricalComponent
+from .abstract_mechanical_component import AbstractMechanicalComponent
