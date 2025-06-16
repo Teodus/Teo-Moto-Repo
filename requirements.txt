@@ -6,6 +6,7 @@ jupyter
 matplotlib
 black[jupyter]
 shortuuid
+ipywidgets
 
 gpxpy
 geopy

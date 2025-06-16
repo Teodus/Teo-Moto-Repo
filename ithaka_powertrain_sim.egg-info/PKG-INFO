@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: ithaka_powertrain_sim
+Version: 1.0
+Summary: A project is to understand what are the compromises in terms of power, weight, electric range, petrol range and impact on riding cycle for an electric motorcycle using an in-series hybrid powertrain.
+Author: Marcus Stead-Hall
+Author-email: msteadhall@pm.me
+Dynamic: author
+Dynamic: author-email
+Dynamic: summary
