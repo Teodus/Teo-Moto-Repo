@@ -54,27 +54,16 @@ Complete Google Colab Roadmap for Hybrid Motorcycle
   components:
 
   Engines (ICE):
-  - KTM 690 Duke Single (52kW, 14.5kg, 35% peak
-  efficiency)
-  - Honda CBR600RR I4 (87kW, 67kg, 38% peak efficiency)
-  - Ducati Panigale V2 (115kW, 56kg, 40% peak efficiency)
-  - Custom option with parameter validation
+    Displacement, peak power, torque curve, efficiency map, weight
 
   Electric Motors:
-  - QS Motor 138 70H (8kW, 9kg, 92% efficiency)
-  - Zero SR/F Motor (82kW, 27kg, 95% efficiency)
-  - Lightning LS-218 Motor (150kW, 40kg, 96% efficiency)
-  - Hub vs Mid-drive options
+    Continuous / Peak Power, efficiency cruve, weight, voltage
 
   Batteries:
-  - Tesla 2170 cells (260 Wh/kg, various pack sizes)
-  - LiFePO4 packs (160 Wh/kg, safer, cheaper)
-  - Custom pack builder with cell count calculator
+    Enegry density, power density, weight, cost per kwh
 
   Fuel Systems:
-  - Small tank (8L, 6kg capacity)
-  - Standard tank (15L, 12kg capacity)
-  - Extended range (25L, 20kg capacity)
+    Volume, weight (full and empty)
 
   ### 2.2 Interactive Selection Widgets
 
