@@ -12,7 +12,7 @@ from ..efficiency_definitions import ConstantEfficiency
 
 from .engines import (
     Engine_250cc_20kW, Engine_400cc_30kW, Engine_650cc_50kW, 
-    Engine_750cc_60kW, Engine_900cc_70kW, Engine_1000cc_80kW
+    Engine_750cc_60kW, Engine_1000cc_80kW
 )
 from .motors import (
     Motor_5kW_Hub, Motor_10kW_Hub, Motor_15kW_MidDrive, Motor_30kW_MidDrive,
