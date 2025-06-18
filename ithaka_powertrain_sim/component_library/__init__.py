@@ -46,3 +46,18 @@ from .custom_builder import (
     validate_battery_parameters,
     estimate_component_cost,
 )
+from .predefined_motorcycles import (
+    PREDEFINED_MOTORCYCLES,
+    MOTORCYCLE_SPECS,
+    get_motorcycle_list,
+    get_motorcycle_specs,
+    create_motorcycle,
+    create_commuter_ev,
+    create_sport_ev,
+    create_touring_ev,
+    create_entry_level_ice,
+    create_middleweight_ice,
+    create_superbike_ice,
+    create_series_hybrid,
+    create_parallel_hybrid,
+)
