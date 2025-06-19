@@ -18,6 +18,7 @@ from .motors import (
 )
 from .batteries import (
     Battery_5kWh_180WhKg,
+    Battery_8kWh_190WhKg,
     Battery_10kWh_200WhKg,
     Battery_15kWh_220WhKg,
     Battery_20kWh_180WhKg,
@@ -60,4 +61,7 @@ from .predefined_motorcycles import (
     create_superbike_ice,
     create_series_hybrid,
     create_parallel_hybrid,
+)
+from .interactive_picker import (
+    ComponentPickerState,
 )

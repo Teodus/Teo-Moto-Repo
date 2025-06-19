@@ -140,6 +140,16 @@ BATTERY_SPECS = {
         "efficiency": 0.92,
         "description": "Small energy-dense pack - city commuting"
     },
+    "8kWh_190WhKg": {
+        "capacity_kWh": 8.0,
+        "energy_density_WhKg": 190,
+        "power_density_WKg": 900,
+        "cell_mass_kg": 42.1,
+        "pack_overhead_kg": 10.0,
+        "max_discharge_rate_C": 3.2,
+        "efficiency": 0.925,
+        "description": "Mid-size efficient pack - urban commuting and touring"
+    },
     "10kWh_200WhKg": {
         "capacity_kWh": 10.0,
         "energy_density_WhKg": 200,

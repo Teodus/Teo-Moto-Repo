@@ -82,6 +82,25 @@ def Battery_5kWh_180WhKg(allow_negative: bool = False, custom_capacity_kWh: floa
     return _create_battery_pack("5kWh_180WhKg", allow_negative, custom_capacity_kWh)
 
 
+def Battery_8kWh_190WhKg(allow_negative: bool = False, custom_capacity_kWh: float | None = None) -> ElectricalSource:
+    """
+    Create an 8kWh battery pack with 190 Wh/kg energy density.
+    
+    Parameters
+    ----------
+    allow_negative : bool, optional
+        Whether to allow negative state of charge (default: False)
+    custom_capacity_kWh : float | None, optional
+        Override the default 8kWh capacity (default: None)
+        
+    Returns
+    -------
+    ElectricalSource
+        8kWh battery pack component
+    """
+    return _create_battery_pack("8kWh_190WhKg", allow_negative, custom_capacity_kWh)
+
+
 def Battery_10kWh_200WhKg(allow_negative: bool = False, custom_capacity_kWh: float | None = None) -> ElectricalSource:
     """
     Create a 10kWh battery pack with 200 Wh/kg energy density.
