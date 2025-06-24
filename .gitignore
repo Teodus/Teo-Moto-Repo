@@ -2,3 +2,7 @@
 __pycache__
 /.idea
 /.venvvenv/
+
+# Claude Code configuration files
+CLAUDE.md
+.claude/
