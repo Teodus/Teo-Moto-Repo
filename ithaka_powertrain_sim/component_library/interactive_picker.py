@@ -6,8 +6,16 @@ engines for the interactive component selection interface.
 """
 
 import ipywidgets as widgets
-from IPython.display import display, clear_output
-from typing import Dict, Any, Callable, Optional
+from IPython.display import display, clear_output, HTML
+from typing import Dict, Any, Callable, Optional, List
+import warnings
+
+# Ensure Colab compatibility
+try:
+    from google.colab import output
+    IN_COLAB = True
+except ImportError:
+    IN_COLAB = False
 
 from .component_specs import ENGINE_SPECS, MOTOR_SPECS, BATTERY_SPECS, FUEL_TANK_SPECS
 from .custom_builder import (
@@ -49,6 +57,16 @@ from .fuel_systems import (
     FuelTank_15L,
     FuelTank_25L,
 )
+
+
+def ensure_widget_display():
+    """Ensure widgets display properly in Colab environment."""
+    if IN_COLAB:
+        try:
+            from google.colab import output as colab_output
+            colab_output.enable_custom_widget_manager()
+        except Exception:
+            pass
 
 
 class ComponentPickerState:
@@ -568,11 +586,15 @@ def create_configuration_export(state: ComponentPickerState) -> widgets.Widget:
         icon='download'
     )
     
-    code_output = widgets.Textarea(
+    # Use Output widget for better Colab compatibility
+    code_output = widgets.Output()
+    
+    # Alternative text area for code display
+    code_textarea = widgets.Textarea(
         value="# Click 'Export Configuration Code' to generate component code",
         rows=15,
         disabled=True,
-        layout=widgets.Layout(width='100%')
+        layout=widgets.Layout(width='100%', font_family='monospace')
     )
     
     def on_export_click(b):
@@ -694,11 +716,20 @@ def create_configuration_export(state: ComponentPickerState) -> widgets.Widget:
                 ")"
             ])
         
-        code_output.value = "\n".join(code_lines)
+        # Display code in both output and textarea for compatibility
+        generated_code = "\n".join(code_lines)
+        code_textarea.value = generated_code
+        
+        with code_output:
+            clear_output()
+            if IN_COLAB:
+                # In Colab, also display as formatted code block
+                display(HTML(f'<pre style="background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto;"><code>{generated_code}</code></pre>'))
     
     export_button.on_click(on_export_click)
     
     return widgets.VBox([
         export_button,
+        code_textarea,
         code_output
     ])

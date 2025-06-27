@@ -8,23 +8,41 @@ This is a hybrid motorcycle powertrain simulation project designed to help under
 
 ## Development Environment
 
-### Setup Commands
-```bash
-# Install dependencies
-pip install -r requirements.txt
+### Package Installation
 
-# Install package in development mode
+This project uses setuptools for package management:
+
+```bash
+# Install in development mode (recommended)
 pip install -e .
+
+# Or install from requirements only
+pip install -r requirements.txt
 
 # Code formatting (when needed)
 black .
 ```
 
+**Note**: The `shortuuid` dependency may need manual installation in some environments.
+
 ### Key Dependencies
 - **Core**: numpy, pandas, scipy, matplotlib
-- **Notebooks**: jupyter, ipywidgets (for interactive components)
+- **Notebooks**: jupyter, ipywidgets (critical for Colab interface)
 - **GPS Processing**: gpxpy, geopy
-- **Development**: black (for code formatting)
+- **Utilities**: shortuuid, setuptools
+- **Development**: black[jupyter] (for code formatting)
+
+### Local Development Setup
+
+```bash
+# Using direnv (optional)
+echo "use python" > .envrc
+direnv allow
+
+# Standard setup
+pip install -r requirements.txt
+pip install -e .
+```
 
 ## Architecture Overview
 
@@ -50,6 +68,15 @@ black .
 
 ## Component Hierarchy
 
+### Core Inheritance Architecture
+
+```python
+AbstractComponent (Base)
+├── AbstractElectricalComponent (shared_abstract_classes/)
+├── AbstractMechanicalComponent (shared_abstract_classes/)
+└── Motorbike (multiple inheritance from both)
+```
+
 All components inherit from abstract base classes:
 - **`AbstractComponent`**: Base class for all physical components
 - **`AbstractElectricalComponent`**: Electrical system components
@@ -57,24 +84,45 @@ All components inherit from abstract base classes:
 - **`AbstractEnergySink`**: Energy consumption components
 - **`AbstractEnergySource`**: Energy storage components
 
+### Package Structure
+- **Root package**: `ithaka_powertrain_sim/` (installable via setup.py)
+- **Component library**: Factory pattern with specifications database
+- **Interactive system**: ipywidgets-based interface for Google Colab
+
 ## Testing Strategy
 
-**Current**: Manual testing through Jupyter notebooks
-- **Integration tests**: `notebooks/component_library_integration_test.ipynb`
-- **Basic functionality**: `notebooks/file_import_test.ipynb`
-- **Simple trajectories**: `notebooks/straight_line_test.ipynb`
+**Current Approach**: Manual testing through interactive notebooks
+- **Primary validation**: `ithaka_master_notebook.ipynb` end-to-end workflow
+- **Component testing**: `custom_build_motorcycles.ipynb`
+- **Physics validation**: `straight_line_test.ipynb`
+- **Basic functionality**: `file_import_test.ipynb`
 
-**No formal testing framework** is currently implemented. Tests are validated manually through notebook execution and visual verification.
+**No formal test framework** - all validation through notebook execution.
+**Empty `tests/` directory** - reserved for future unit tests.
 
 ## Key Notebooks
 
 ### Primary User Interface
-- **`notebooks/ithaka_master_notebook.ipynb`**: Clean CEO-ready interface for complete simulations
-- **`notebooks/interactive_component_picker.ipynb`**: Interactive widget-based component selection
+
+**Main Interface**: `notebooks/ithaka_master_notebook.ipynb`
+- Complete CEO-ready workflow with 5-step process
+- Automatic environment detection (Colab vs local)
+- Self-healing repository setup with fallback URLs
+- Interactive component selection with real-time validation
 
 ### Development and Testing
-- **`notebooks/component_library_demo.ipynb`**: Showcases generic component capabilities
-- **`notebooks/component_library_integration_test.ipynb`**: Validates component library integration
+- **`custom_build_motorcycles.ipynb`**: Component library testing and custom builds
+- **`prebuilt_motorcycles.ipynb`**: Predefined motorcycle showcase
+- **`file_import_test.ipynb`**: Basic trajectory loading tests
+- **`straight_line_test.ipynb`**: Simple physics validation
+
+### Google Colab Integration
+
+The master notebook includes sophisticated auto-setup:
+- Detects Colab vs local environment
+- Auto-clones repository with fallback URLs
+- Validates all dependencies and provides diagnostics
+- Handles common installation issues (shortuuid, etc.)
 
 ## Adding New Components
 
