@@ -2,10 +2,11 @@
 
 import pandas as pd
 import numpy as np
-from typing import Tuple, Optional, Dict, Any
+from typing import Tuple, Optional, Dict, Any, List
 from ..trajectory import load_gpx, append_and_resample_dataframe
 from .track_processor import TrackProcessor
 from .speed_calculator import SpeedCalculator
+from .range_tracker import RangeTracker
 
 
 class SimulationRunner:
@@ -17,6 +18,7 @@ class SimulationRunner:
         max_speed_kmh: float = 300.0,
         use_filter: bool = True,
         speed_calculation_method: str = "distance_time",
+        track_range: bool = True,
     ):
         """
         Initialize simulation runner.
@@ -31,6 +33,8 @@ class SimulationRunner:
             Whether to filter stopped sections (default: True)
         speed_calculation_method : str
             Method for average speed: 'distance_time', 'mean_speeds', 'weighted'
+        track_range : bool
+            Whether to track range and energy consumption (default: True)
         """
         self.track_processor = TrackProcessor(
             min_speed_kmh=min_speed_kmh, max_speed_kmh=max_speed_kmh
@@ -38,6 +42,7 @@ class SimulationRunner:
         self.speed_calculator = SpeedCalculator()
         self.use_filter = use_filter
         self.speed_method = speed_calculation_method
+        self.track_range = track_range
 
     def simulate_motorcycle_on_track(
         self, motorcycle: Any, track_file: str, track_name: str, verbose: bool = False
@@ -102,10 +107,18 @@ class SimulationRunner:
             delta_elevations = np.diff(processed_df["Elevation"], prepend=0).tolist()
             times = processed_df["Target Time"].to_list()
 
-            # Step 5: Run motorcycle simulation
+            # Step 5: Initialize range tracker if enabled
+            range_tracker = None
+            if self.track_range:
+                range_tracker = RangeTracker(motorcycle)
+                if verbose:
+                    print("Range tracking enabled")
+
+            # Step 6: Run motorcycle simulation
             achieved_speeds = [target_speeds[0]]
             reporting_rows = []
             energy_consumed = []
+            current_distance = 0.0
 
             for i in range(1, len(processed_df)):
                 delta_time = times[i] - times[i - 1]
@@ -138,12 +151,23 @@ class SimulationRunner:
                     reporting_rows.append(reporting_row)
 
                     # Track energy if available
+                    energy_j = 0
                     if (
                         hasattr(reporting_row, "get")
                         and "Energy Consumed (J)" in reporting_row
                     ):
-                        energy_consumed.append(
-                            reporting_row.get("Energy Consumed (J)", 0)
+                        energy_j = reporting_row.get("Energy Consumed (J)", 0)
+                        energy_consumed.append(energy_j)
+                    
+                    # Update range tracker
+                    if range_tracker and energy_j > 0:
+                        current_distance = processed_df.iloc[i]["Distance"] / 1000  # Convert to km
+                        current_speed = achieved_speed * 3.6  # Convert to km/h
+                        range_tracker.update(
+                            time_s=times[i],
+                            distance_km=current_distance,
+                            speed_kmh=current_speed,
+                            energy_consumed_J=energy_j
                         )
 
                 except Exception as e:
@@ -198,6 +222,24 @@ class SimulationRunner:
             result["max_speed_kmh"] = float(max(validated_speeds) * 3.6)
             result["min_speed_kmh"] = float(min(validated_speeds) * 3.6)
             result["speed_std_kmh"] = float(np.std(validated_speeds) * 3.6)
+
+            # Add range metrics if tracking is enabled
+            if range_tracker:
+                range_metrics = range_tracker.get_range_metrics()
+                efficiency_profile = range_tracker.get_efficiency_profile()
+                
+                result["range_metrics"] = {
+                    "total_capacity_kWh": range_metrics.total_capacity_J / 3.6e6,
+                    "energy_remaining_kWh": range_metrics.current_energy_J / 3.6e6,
+                    "energy_remaining_percent": range_metrics.energy_percent_remaining,
+                    "range_remaining_avg_km": range_metrics.range_remaining_average_km,
+                    "range_remaining_recent_km": range_metrics.range_remaining_recent_km,
+                    "range_remaining_worst_km": range_metrics.range_remaining_worst_km,
+                    "total_theoretical_range_km": range_metrics.total_range_km,
+                    "energy_sources": range_metrics.energy_sources,
+                }
+                
+                result["efficiency_profile"] = efficiency_profile
 
             # Track data quality metrics
             result["data_points"] = len(processed_df)

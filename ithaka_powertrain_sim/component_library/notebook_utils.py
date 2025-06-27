@@ -347,6 +347,14 @@ class SimulationExporter:
                     ) if result['total_distance_km'] > 0 else 0,
                     'status': 'success'
                 }
+                
+                # Include range metrics if available
+                if 'range_metrics' in result:
+                    formatted[track_name]['range_metrics'] = result['range_metrics']
+                
+                # Include efficiency profile if available
+                if 'efficiency_profile' in result:
+                    formatted[track_name]['efficiency_profile'] = result['efficiency_profile']
             else:
                 formatted[track_name] = {
                     'track_name': result['track_name'],
@@ -516,4 +524,120 @@ class UIComponents:
         </div>
         """
         
+        return html
+    
+    @staticmethod
+    def create_range_display(range_metrics: Dict[str, Any]) -> str:
+        """Create HTML display for range metrics."""
+        if not range_metrics:
+            return "<p>No range data available</p>"
+        
+        # Extract key metrics
+        energy_percent = range_metrics.get('energy_remaining_percent', 0)
+        range_avg = range_metrics.get('range_remaining_avg_km', 0)
+        range_recent = range_metrics.get('range_remaining_recent_km', 0)
+        range_worst = range_metrics.get('range_remaining_worst_km', 0)
+        total_range = range_metrics.get('total_theoretical_range_km', 0)
+        
+        # Create progress bar color based on remaining energy
+        if energy_percent > 50:
+            color = '#28a745'  # Green
+        elif energy_percent > 20:
+            color = '#ffc107'  # Yellow
+        else:
+            color = '#dc3545'  # Red
+        
+        html = f"""
+        <div style="border: 2px solid {color}; border-radius: 10px; padding: 20px; margin: 15px 0;">
+            <h3 style="margin-top: 0;">🔋 Range Status</h3>
+            
+            <!-- Energy Progress Bar -->
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span><b>Energy Remaining:</b></span>
+                    <span><b>{energy_percent:.1f}%</b></span>
+                </div>
+                <div style="width: 100%; background-color: #e0e0e0; border-radius: 10px; overflow: hidden;">
+                    <div style="width: {energy_percent}%; background-color: {color}; 
+                                padding: 8px 0; text-align: center; color: white; font-weight: bold;">
+                        {range_metrics.get('energy_remaining_kWh', 0):.1f} kWh
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Range Estimates -->
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px;"><b>Range (Average Efficiency):</b></td>
+                    <td style="padding: 8px; text-align: right; color: {color};"><b>{range_avg:.1f} km</b></td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px;">Range (Recent Efficiency):</td>
+                    <td style="padding: 8px; text-align: right;">{range_recent:.1f} km</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px;">Range (Worst Case):</td>
+                    <td style="padding: 8px; text-align: right;">{range_worst:.1f} km</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;">Total Theoretical Range:</td>
+                    <td style="padding: 8px; text-align: right;">{total_range:.1f} km</td>
+                </tr>
+            </table>
+            
+            <!-- Energy Sources -->
+        """
+        
+        energy_sources = range_metrics.get('energy_sources', {})
+        if energy_sources:
+            html += """
+            <div style="margin-top: 15px;">
+                <b>Energy Sources:</b>
+                <ul style="margin: 5px 0;">
+            """
+            for source, amount in energy_sources.items():
+                html += f"<li>{source}: {amount:.2f} kWh</li>"
+            html += "</ul></div>"
+        
+        html += "</div>"
+        return html
+    
+    @staticmethod
+    def create_efficiency_chart(efficiency_profile: Dict[str, Any]) -> str:
+        """Create HTML display for efficiency profile."""
+        if not efficiency_profile:
+            return ""
+        
+        avg_eff = efficiency_profile.get('average_efficiency_Wh_per_km', 0)
+        best_eff = efficiency_profile.get('best_efficiency_Wh_per_km', 0)
+        worst_eff = efficiency_profile.get('worst_efficiency_Wh_per_km', 0)
+        
+        html = f"""
+        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 10px 0;">
+            <h4 style="margin-top: 0;">⚡ Efficiency Analysis</h4>
+            <table style="width: 100%;">
+                <tr>
+                    <td><b>Average:</b></td>
+                    <td style="text-align: right;">{avg_eff:.1f} Wh/km</td>
+                </tr>
+                <tr>
+                    <td><b>Best:</b></td>
+                    <td style="text-align: right; color: #28a745;">{best_eff:.1f} Wh/km</td>
+                </tr>
+                <tr>
+                    <td><b>Worst:</b></td>
+                    <td style="text-align: right; color: #dc3545;">{worst_eff:.1f} Wh/km</td>
+                </tr>
+            </table>
+        """
+        
+        # Speed-based efficiency
+        speed_efficiency = efficiency_profile.get('efficiency_at_speeds', {})
+        if speed_efficiency:
+            html += "<div style='margin-top: 10px;'><b>Efficiency by Speed:</b><ul style='margin: 5px 0;'>"
+            for speed_range, eff in speed_efficiency.items():
+                html += f"<li>{speed_range}: {eff:.1f} Wh/km</li>"
+            html += "</ul></div>"
+        
+        html += "</div>"
         return html
