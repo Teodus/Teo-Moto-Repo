@@ -37,70 +37,48 @@ class NotebookEnvironment:
         try:
             import google.colab
             IN_COLAB = True
-            print("🌐 Google Colab environment detected")
+            print("Google Colab environment detected")
         except ImportError:
             IN_COLAB = False
-            print("💻 Local environment detected")
+            print("Local environment detected")
         
         if IN_COLAB:
-            print("📦 Setting up Colab environment...")
-            
             # Check for existing repository
+            print("Checking for repository...")
+            
             current_dir = os.getcwd()
             possible_paths = ['/content/Teo-Moto-Repo', '/content/ithaka-powertrain-sim', current_dir]
             
             repo_found = False
             for path in possible_paths:
                 if os.path.exists(path) and os.path.exists(os.path.join(path, 'setup.py')):
-                    print(f"✅ Found repository at: {path}")
+                    print(f"Found repository at: {path}")
                     os.chdir(path)
                     repo_found = True
                     break
             
             if not repo_found:
-                print("📥 Cloning repository...")
-                repo_urls = [
-                    'https://github.com/Teodus/Teo-Moto-Repo.git',
-                    'https://github.com/yourusername/ithaka-powertrain-sim.git'  # Fallback URL
-                ]
-                
-                for url in repo_urls:
-                    try:
-                        result = subprocess.run(['git', 'clone', url],
-                                              capture_output=True, text=True, cwd='/content')
-                        if result.returncode == 0:
-                            repo_name = url.split('/')[-1].replace('.git', '')
-                            os.chdir(f'/content/{repo_name}')
-                            print("✅ Repository cloned successfully")
-                            break
-                    except Exception as e:
-                        continue
-                else:
-                    print("❌ Failed to clone repository. Please check your internet connection.")
+                print("Cloning repository...")
+                try:
+                    result = subprocess.run(['git', 'clone', 'https://github.com/Teodus/Teo-Moto-Repo.git'],
+                                          capture_output=True, text=True, cwd='/content')
+                    if result.returncode == 0:
+                        os.chdir('/content/Teo-Moto-Repo')
+                        print("Repository cloned successfully")
+                    else:
+                        print("Clone failed. Please check your internet connection.")
+                        return False
+                except Exception as e:
+                    print(f"Error: {e}")
                     return False
             
             # Install dependencies
-            print("📦 Installing dependencies...")
-            try:
-                # Install requirements
-                subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', '-r', 'requirements.txt'],
-                              capture_output=True, check=True)
-                
-                # Install package in development mode
-                subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', '-e', '.'],
-                              capture_output=True, check=True)
-                
-                # Handle shortuuid separately if needed
-                try:
-                    import shortuuid
-                except ImportError:
-                    subprocess.run([sys.executable, '-m', 'pip', 'install', 'shortuuid'],
-                                 capture_output=True)
-                
-                print("✅ Dependencies installed")
-            except subprocess.CalledProcessError as e:
-                print(f"❌ Error installing dependencies: {e}")
-                return False
+            print("Installing dependencies...")
+            subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', '-r', 'requirements.txt'],
+                          capture_output=True)
+            subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', '-e', '.'],
+                          capture_output=True)
+            print("Dependencies installed")
         
         # Verify installation
         return NotebookEnvironment.verify_installation()
@@ -113,7 +91,7 @@ class NotebookEnvironment:
         Returns:
             bool: True if all imports successful, False otherwise
         """
-        print("\n🔍 Verifying installation...")
+        print("Verifying installation...")
         
         required_packages = {
             'pandas': 'pandas as pd',
@@ -128,9 +106,9 @@ class NotebookEnvironment:
         for package_name, import_stmt in required_packages.items():
             try:
                 exec(f"import {import_stmt}")
-                print(f"✅ {package_name}")
+                # Silent success - only report failures
             except ImportError as e:
-                print(f"❌ {package_name}: {e}")
+                print(f"Missing {package_name}: {e}")
                 missing_packages.append(package_name)
         
         # Check component imports
@@ -139,17 +117,16 @@ class NotebookEnvironment:
                 Battery_10kWh_200WhKg, Motor_30kW_MidDrive, Engine_650cc_50kW
             )
             from ithaka_powertrain_sim.simulation import SimulationRunner
-            print("✅ Component library modules")
-            print("✅ Simulation modules")
+            print("Component library modules loaded successfully")
         except ImportError as e:
-            print(f"❌ Component imports: {e}")
+            print(f"Component imports failed: {e}")
             missing_packages.append('component_library')
         
         if missing_packages:
-            print(f"\n⚠️  Missing packages: {', '.join(missing_packages)}")
+            print(f"Missing packages: {', '.join(missing_packages)}")
             return False
         
-        print("\n✅ All modules imported successfully!")
+        print("All modules imported successfully!")
         return True
 
 

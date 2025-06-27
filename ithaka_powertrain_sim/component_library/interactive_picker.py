@@ -64,9 +64,15 @@ def ensure_widget_display():
     if IN_COLAB:
         try:
             from google.colab import output as colab_output
+            # Enable custom widgets in Colab
             colab_output.enable_custom_widget_manager()
         except Exception:
-            pass
+            # Fallback for older Colab versions
+            try:
+                from google.colab import widgets as colab_widgets
+                colab_widgets.enable()
+            except:
+                pass
 
 
 class ComponentPickerState:
